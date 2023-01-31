@@ -8,7 +8,7 @@
 
 ## 第一章：插值算法
 ### 1.拉格朗日插值
-#### 文件  [Lagrange.m][1]
+#### 文件：  [Lagrange.m][1]
 #### 代码：
 ```matlab
 function [func] = Lagrange(x)
