@@ -73,6 +73,6 @@ GitHub：[我的主页][4]
 
 
   [1]: https://github.com/19303024671/Numerical-Analysis-Algorithms/blob/main/Lagrange.m
-  [2]: https://3074647498@qq.com
+  [2]: 3074647498@qq.com
   [3]: https://blog.csdn.net/m0_67194505
   [4]: https://github.com/19303024671
