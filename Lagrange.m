@@ -13,11 +13,9 @@ function [func] = Lagrange(x)
 % 
 %     @(x)x.^3-4.*x.^2+3
 %注意事项：适合拉格朗日插值算法的问题使用
-%作者：王洪立
+%作者：粤地小蜜蜂
 %创建日期：2023年2月1日
 %最后更新日期：2023年2月1日
-%CSDN：see <a href=
-%"https://blog.csdn.net/Undefinedefity">my CSDN blogs</a>.
    n = size(x,1);
    func = "";
    for i=1:n
