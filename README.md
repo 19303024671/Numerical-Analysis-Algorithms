@@ -117,12 +117,68 @@ end
 ```
 ------
 
+### 3.牛顿插值
+#### 文件：[NewtonI.m][5]
+#### 说明：需要文件 [DiffQuot.m][6] 与 [IsPlot.m][7]
+#### 代码：
+```matlab
+function [func] = NewtonI(x,func_in)
+%函数的功能：牛顿插值算法
+%函数的使用：func = NewtonI(x,func_in)或table=NewtonI(x)
+%      输入：x:坐标矩阵[1,2;2,3;3,4;]
+%或    输入：x:横坐标矩阵[1;2;3;4]与
+%            func_in:原函数句柄如@(x)x+1
+%      输出：牛顿插值多项式函数func(可选是否化简)以及可选绘图
+%注意事项：适合牛顿插值算法的问题,MATLAB版本R2020b
+%作者：粤地小蜜蜂
+%创建日期：2023年2月2日
+%最后更新日期：2023年2月2日
+%CSDN：see <a href=
+%"https://blog.csdn.net/m0_67194505">my CSDN blogs</a>.
+    if ~exist('func_in','var')
+        table = DiffQuot(x);
+    end
+    if exist('func_in','var')
+        table = DiffQuot(x,func_in);
+    end
+    n = size(x,1);
+    func = "("+num2str(table(1,2))+")"+"+";
+    for i = 2:n
+        temp = "("+num2str(table(i,i+1))+")*";
+        for j = 1:i-1
+            temp = temp + "(x-" + num2str(table(j,1))+")*";
+        end
+        temp = extractBetween(temp,1,strlength(temp)-1);
+        func = func + temp + "+";
+    end
+    func = extractBetween(func,1,strlength(func)-1);
+    msg = input('化简？yes or no','s');
+    switch msg
+        case 'yes'
+                func = str2sym(func);
+                func = simplify(func);
+                func = str2func(['@(x)',vectorize(func)]);
+        case 'no'
+            disp('no simplify');
+            func = str2func(strcat("@(x)",func));
+        otherwise
+            disp('no accept command');
+    end
+    msg = input('绘图？','s');
+    IsPlot(func_in,func,msg);
+end
+
+
+```
+
+------
+
 ## 联系我：粤地小蜜蜂
-email：[我的QQ邮箱][5]
+email：[我的QQ邮箱][8]
 
-CSDN:  [我的主页][6]
+CSDN:  [我的主页][9]
 
-GitHub：[我的主页][7]
+GitHub：[我的主页][10]
 
 ------
 
@@ -131,6 +187,9 @@ GitHub：[我的主页][7]
   [2]: https://github.com/19303024671/Numerical-Analysis-Algorithms/blob/main/Lagrange2.m
   [3]: https://github.com/19303024671/Numerical-Analysis-Algorithms/blob/main/Lagrange.m
   [4]: https://github.com/19303024671/Numerical-Analysis-Algorithms/blob/main/IsPlot.m
-  [5]: 3074647498@qq.com
-  [6]: https://blog.csdn.net/m0_67194505
-  [7]: https://github.com/19303024671
+  [5]: https://github.com/19303024671/Numerical-Analysis-Algorithms/blob/main/NewtonI.m
+  [6]: https://github.com/19303024671/Numerical-Analysis-Algorithms/blob/main/DiffQuot.m
+  [7]: https://github.com/19303024671/Numerical-Analysis-Algorithms/blob/main/IsPlot.m
+  [8]: 3074647498@qq.com
+  [9]: https://blog.csdn.net/m0_67194505
+  [10]: https://github.com/19303024671
