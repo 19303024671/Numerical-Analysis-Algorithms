@@ -40,7 +40,9 @@ function [func] = NewtonI(x,func_in)
         otherwise
             disp('no accept command');
     end
-    msg = input('绘图？','s');
-    IsPlot(func_in,func,msg);
+    if exist('func_in','var')
+        msg = input('绘图？yes or no','s');
+        IsPlot(func_in,func,msg);
+    end  
 end
 
