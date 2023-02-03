@@ -174,40 +174,56 @@ end
 ------
 
 ### 4.三次埃尔米特插值算法
-#### 文件：[Hermite.m][8]
+#### 文件：[HermiteI.m][8]
 #### 说明：需要文件 [IsPlot.m][9] 提供绘图操作
 #### 代码：
 ```matlab
-function [func] = HermiteI(x,func_in)
+function [func] = HermiteI(x,func_in,mode)
 %函数的功能：三次埃尔米特(Hermitel)插值算法
 %函数的使用：func = Hermite(x,func_in)
-%      输入：x:坐标矩阵[1,2;2,3;3,4;]
-%或    输入：x:横坐标矩阵[1;2;3;4]与
+%      输入：x:坐标矩阵[1,2,3;2,3,4]
+%或    输入：x:横坐标矩阵[1;2]与
 %            func_in:原函数句柄如@(x)x+1
 %      输出：埃尔米特插值多项式函数func(可选是否化简)以及可选绘图
-%注意事项：适合埃尔米特插值算法的问题(函数值与导数值均相等),有且只有指定两个点(只能三次插值),MATLAB版本R2020b
+%注意事项：1、mode表示是否作为子函数调用(忽略绘图与是否化简输入)，正常情况可以直接忽略该参数
+%          2、适合埃尔米特插值算法的问题(函数值与导数值均相等),有且只有指定两个点(只能三次插值),MATLAB版本R2020b
 %作者：粤地小蜜蜂
 %创建日期：2023年2月2日
-%最后更新日期：2023年2月2日
+%最后更新日期：2023年2月3日
 %CSDN：see <a href=
 %"https://blog.csdn.net/m0_67194505">my CSDN blogs</a>.
     if size(x,1)~=2
         disp("只能进行三次的Hermite插值");
+        func = "无结果";
         return;
     end
-    temp = zeros(2,3);
-    if exist('func_in','var')
+    if nargin==1
+        func = in1(x);
+        func = IsSimple(func);
+        return;
+    end
+    if exist('func_in','var')&& nargin==2
         temp(:,1)=x(:,1);
         func_dao = diff(str2sym(func2str(func_in))); 
         for i = 1:2
             temp(i,2) = func_in(x(i,1));
             temp(i,3) = func_dao(x(i,1));
         end
+        func = in1(temp);
+        func = IsSimple(func);
+        msg = input("绘图？yes or no",'s');
+        IsPlot(func_in,func,msg);
+        return;
+    end    
+    if nargin==3
+        func = in1(x);
+        func = IsSimple(func,"no");
+        return;
     end
-    if ~exist('func_in','var')
-        temp(:,:) = x(:,:);
-    end
-
+end
+function [func] = in1(x1)
+    temp = zeros(2,3);
+    temp(:,:) = x1(:,:);
     h0_1 = "(x-"+"("+num2str(temp(1,1))+"))"+"/"+"("+num2str(temp(2,1)-temp(1,1))+")";%(x-x0)/(x1-x0)
     h0_2 = "("+"(x-"+"("+num2str(temp(2,1))+"))"+"/"+"("+num2str(temp(1,1)-temp(2,1))+"))^2"; %((x-x1)/(x0-x1))^2
     h0_1 = "(1+"+"2*"+h0_1+")";%(1+2(x-x0)/(x1-x0))
@@ -221,25 +237,30 @@ function [func] = HermiteI(x,func_in)
     H0 = "(x-"+num2str(temp(1,1))+")*"+h0_2;
     H1 = "(x-"+num2str(temp(2,1))+")*"+h1_2;
     func = num2str(temp(1,2))+"*" + h0+"+"+num2str(temp(2,2))+"*"+h1;
-    func = func + "+" + num2str(temp(1,3))+"*"+H0+"+"+num2str(temp(2,3))+"*"+H1;
-    msg = input("化简？yes or no",'s');
+    func = func + "+" + num2str(temp(1,3))+"*"+H0+"+"+num2str(temp(2,3))+"*"+H1;  
+end
+function [func] = IsSimple(func,mode)
+    if ~exist('mode','var')
+        msg = input("化简？yes or no",'s');
+    else
+        msg = "no";
+    end
     switch msg
         case "yes"
             func = str2sym(func);
             func = simplify(func);
             func = str2func(['@(x)',vectorize(func)]);
         case "no"
-            disp("no simplify");
-            func = str2func(strcat("@(x)",func));
+            if nargin==1
+                disp("no simplify");
+            end
+            func = str2func(vectorize(strcat("@(x)",func)));
         otherwise
                 func = str2func(strcat("@(x)",func));
                 disp("no accept command");
-    end
-    if exist('func_in','var')
-        msg = input("绘图？yes or no",'s');
-        IsPlot(func_in,func,msg);
-    end
+     end
 end
+
 
 
 ```
@@ -248,7 +269,7 @@ end
 
 ### 5.分段线性插值
 #### 文件：[LowOrder1.m][10]
-#### 说明：重载函数，可以接受一个或三个参数，具体见文件内说明
+#### 说明：重载函数，可以接受一个或三个参数，具体见文件内说明，需要文件 [Lagrange.m][11] 求两点的直线
 #### 代码：
 ```matlab
 function [func] = LowOrder1(x,func_in,n)
@@ -341,12 +362,98 @@ end
 
 ------
 
+### 6.分段三次插值（分段Hermite插值）
+#### 文件： [LowOrder3.m][12]
+#### 说明： 需要文件 [HermiteI.m][13] 提供求每一段的插值函数与文件 [MyFunc.m][14] 提供绘制分段函数所需的[y,x]矩阵，具体见文件内注释
+#### 代码：
+```matlab
+function [func] = LowOrder3(x,func_in,n)
+%函数的功能：分段三次插值算法
+%函数的使用：func = LowOrder3(x1)或func = LowOrder3(x3,func_in,n)
+%      输入：x1:坐标矩阵[1,2,3;2,3,4;3,4,5;]表示[x,f(x),f导函数(x);...]
+%或    输入：x3:插值总区间如[1,2]与
+%            func_in:原函数句柄如@(x)x+1
+%            n:分段数
+%      输出：分段三次插值函数信息元组func以及绘图操作
+%注意事项：MATLAB版本R2020b
+%作者：粤地小蜜蜂
+%创建日期：2023年2月3日
+%最后更新日期：2023年2月3日
+%CSDN：see <a href=
+%"https://blog.csdn.net/m0_67194505">my CSDN blogs</a>.
+   if nargin  == 1
+        func = in1(x);
+        %绘图
+        figure(1);
+        hold on
+        %先获取分段函数的矩阵[y,x]
+        [y,x] = MyFunc(func);
+        plot(x,y,'-b');
+        title("分段三次插值");
+        xlabel("x");ylabel("y");
+        grid on
+        legend("分段三次插值函数");
+        hold off 
+        return;
+   end
+   if nargin == 3
+       func = in3(x,func_in,n);
+       figure(1);
+       fplot(func_in,'-r');
+       hold on
+       [y,x] = MyFunc(func);
+       plot(x,y,'-b');
+       title("分段三次插值");
+       xlabel("x");ylabel("y");
+       grid on
+       legend("原函数图像","插值函数图像");
+       hold off 
+       return;
+   end
+end
+
+function [func] = in1(x1)
+    if size(x1,2)~=3
+        disp("输入矩阵有误！");
+        func = "无结果";
+        return;
+    end
+    n = size(x1,1)-1;
+    func = cell(n,2);
+    for i = 1:n
+        func{i,1} = "区间：["+num2str(x1(i,1))+","+num2str(x1(i+1,1))+"]";
+        func{i,2} = HermiteI([x1(i,:);x1(i+1,:)],"1","mode");
+    end   
+end
+
+function [func] = in3(x3,func_in,n)
+    if size(x3)~=[1,2]
+        disp("输入矩阵有误！");
+        func = "无结果";
+        return;
+    end
+    temp = zeros(n+1,3);
+    p = (max(x3)-min(x3))/n;
+    func_dao = str2func(['@(x)', vectorize(diff(str2sym(func2str(func_in))))]);
+    for i = 1:n+1
+        begin = min(x3)+(i-1)*p;
+        temp(i,1) = begin;
+        temp(i,2) = func_in(begin);
+        temp(i,3) = func_dao(begin);        
+    end
+    func = in1(temp);
+end
+
+
+```
+------
+
 ## 联系我：粤地小蜜蜂
-email：[我的QQ邮箱][11]
+email：[我的QQ邮箱][15]
 
-CSDN:  [我的主页][12]
+CSDN:  [我的主页][16]
 
-GitHub：[我的主页][13]
+GitHub：[我的主页][17]
 
 ------
 
@@ -361,6 +468,10 @@ GitHub：[我的主页][13]
   [8]: https://github.com/19303024671/Numerical-Analysis-Algorithms/blob/main/HermiteI.m
   [9]: https://github.com/19303024671/Numerical-Analysis-Algorithms/blob/main/IsPlot.m
   [10]: https://github.com/19303024671/Numerical-Analysis-Algorithms/blob/main/LowOrder1.m
-  [11]: 3074647498@qq.com
-  [12]: https://blog.csdn.net/m0_67194505
-  [13]: https://github.com/19303024671
+  [11]: https://github.com/19303024671/Numerical-Analysis-Algorithms/blob/main/Lagrange.m
+  [12]: https://github.com/19303024671/Numerical-Analysis-Algorithms/blob/main/LowOrder3.m
+  [13]: https://github.com/19303024671/Numerical-Analysis-Algorithms/blob/main/HermiteI.m
+  [14]: https://github.com/19303024671/Numerical-Analysis-Algorithms/blob/main/MyFunc.m
+  [15]: 3074647498@qq.com
+  [16]: https://blog.csdn.net/m0_67194505
+  [17]: https://github.com/19303024671
