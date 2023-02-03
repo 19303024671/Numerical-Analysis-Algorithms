@@ -8,11 +8,12 @@ function [func] = HermiteI(x,func_in)
 %注意事项：适合埃尔米特插值算法的问题(函数值与导数值均相等),有且只有指定两个点(只能三次插值),MATLAB版本R2020b
 %作者：粤地小蜜蜂
 %创建日期：2023年2月2日
-%最后更新日期：2023年2月2日
+%最后更新日期：2023年2月3日
 %CSDN：see <a href=
 %"https://blog.csdn.net/m0_67194505">my CSDN blogs</a>.
     if size(x,1)~=2
         disp("只能进行三次的Hermite插值");
+        func = "无结果";
         return;
     end
     temp = zeros(2,3);
