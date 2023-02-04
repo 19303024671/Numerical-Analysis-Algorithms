@@ -822,7 +822,7 @@ end
 ------
 
 ## 联系我：粤地小蜜蜂
-email：<a href="3074647498@qq.com">我的邮箱</a>
+email：<a href="mailto:3074647498@qq.com">我的邮箱</a>
 
 CSDN:  [我的主页][22]
 
